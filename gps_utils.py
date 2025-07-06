@@ -17,7 +17,7 @@ def get_gps(filepath):
 
     def convert_to_degrees(value):
         d, m, s = value
-        return d[0] / d[1] + m[0] / m[1] / 60 + s[0] / s[1] / 3600
+        return float(d) + float(m) / 60 + float(s) / 3600
 
     if "GPSLatitude" in gps_info and "GPSLongitude" in gps_info:
         lat = convert_to_degrees(gps_info["GPSLatitude"])
@@ -28,8 +28,8 @@ def get_gps(filepath):
         if gps_info.get("GPSLongitudeRef") == "W":
             lon = -lon
 
-        altitude = gps_info.get("GPSAltitude", (0, 1))
-        alt = altitude[0] / altitude[1] if altitude else None
+        altitude = gps_info.get("GPSAltitude")
+        alt = float(altitude) if altitude else None
 
         return {
             "latitude": round(lat, 6),
