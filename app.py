@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from gps_utils import get_gps
 import os
 from werkzeug.utils import secure_filename
@@ -8,6 +8,12 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 
 @app.route('/api/extract-gps', methods=['POST'])
 def extract_gps():

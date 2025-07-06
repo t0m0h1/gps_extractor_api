@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GPS Extractor & Mapper</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #map { height: 400px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Upload a Photo to Extract GPS</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" required />
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="result"></div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const res = await fetch('/api/extract-gps', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await res.json();
+            const resultDiv = document.getElementById('result');
+            const mapDiv = document.getElementById('map');
+            mapDiv.innerHTML = '';
+
+            if (res.ok) {
+                resultDiv.innerHTML = `
+                    <p><strong>Latitude:</strong> ${result.latitude}</p>
+                    <p><strong>Longitude:</strong> ${result.longitude}</p>
+                    <p><strong>Altitude:</strong> ${result.altitude}m</p>
+                    <p><a href="${result.map_link}" target="_blank">View on Google Maps</a></p>
+                `;
+
+                const map = L.map('map').setView([result.latitude, result.longitude], 16);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                }).addTo(map);
+                L.marker([result.latitude, result.longitude]).addTo(map)
+                    .bindPopup('Photo Location')
+                    .openPopup();
+            } else {
+                resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
