@@ -1,183 +1,141 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Online GPS Extractor & Map Viewer – Upload EXIF Photos</title>
+    <title>Online GPS Extractor & Map Viewer</title>
     <meta charset="utf-8" />
     <meta name="description" content="Easily extract GPS coordinates from drone or camera images and view them on a map. Free and fast online tool." />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
     <style>
+        /* Reset some default */
+        * {
+            box-sizing: border-box;
+        }
         body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 20px auto;
-    max-width: 700px;
-    background-color: #f9fafb;
-    color: #222;
-    line-height: 1.6;
-    padding: 0 15px;
-}
-
-h1 {
-    color: #2c3e50;
-    font-weight: 700;
-    font-size: 2rem;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-form {
-    background: #fff;
-    padding: 25px 30px;
-    border-radius: 10px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    align-items: center;
-    justify-content: center;
-}
-
-form input[type="file"] {
-    flex-grow: 1;
-    padding: 8px 12px;
-    border: 1.5px solid #ccc;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: border-color 0.3s ease;
-}
-
-form input[type="file"]:focus {
-    outline: none;
-    border-color: #2b6b9d;
-}
-
-button {
-    background-color: #2b6b9d;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: background-color 0.3s ease, transform 0.15s ease;
-    box-shadow: 0 3px 8px rgba(43,107,157,0.4);
-    flex-shrink: 0;
-}
-
-button:hover,
-button:focus {
-    background-color: #1d4f75;
-    outline: none;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(29,79,117,0.5);
-}
-
-#map {
-    height: 420px;
-    margin-top: 30px;
-    border-radius: 12px;
-    border: 2px solid #ddd;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-}
-
-#preview {
-    max-width: 100%;
-    max-height: 300px;
-    margin-top: 20px;
-    border-radius: 12px;
-    border: 1.5px solid #ccc;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    display: none;
-    object-fit: contain;
-}
-
-#loading {
-    color: #2b6b9d;
-    margin-top: 15px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    display: none;
-    text-align: center;
-}
-
-#result {
-    margin-top: 30px;
-    background: #fff;
-    padding: 25px 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    word-wrap: break-word;
-}
-
-#result p {
-    margin: 0.5rem 0;
-    font-size: 1rem;
-}
-
-#result a {
-    color: #2b6b9d;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-#result a:hover {
-    text-decoration: underline;
-}
-
-#result h3 {
-    margin-top: 20px;
-    margin-bottom: 12px;
-    color: #2c3e50;
-}
-
-#result table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-}
-
-#result table td {
-    border: 1px solid #ddd;
-    padding: 8px 10px;
-}
-
-#downloadJson {
-    display: none;
-    margin-top: 25px;
-    padding: 12px 30px;
-    border-radius: 8px;
-    border: none;
-    background-color: #2b6b9d;
-    color: white;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    box-shadow: 0 4px 12px rgba(43,107,157,0.5);
-    transition: background-color 0.3s ease, transform 0.15s ease;
-}
-
-#downloadJson:hover,
-#downloadJson:focus {
-    background-color: #1d4f75;
-    outline: none;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 15px rgba(29,79,117,0.6);
-}
-
-/* Responsive tweaks */
-@media (max-width: 480px) {
-    form {
-        flex-direction: column;
-        padding: 20px;
-    }
-
-    button, input[type="file"] {
-        width: 100%;
-        flex-grow: unset;
-    }
-}
-
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 1rem;
+            color: #3d72b7; /* a nice blue */
+            text-align: center;
+        }
+        form {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            flex-grow: 1;
+            cursor: pointer;
+        }
+        button[type="submit"] {
+            background-color: #3e5c9d; /* blue-600 */
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            flex-shrink: 0;
+        }
+        button[type="submit"]:hover {
+            background-color: #1e40af; /* blue-800 */
+        }
+        #loading {
+            display: none;
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+            text-align: center;
+            width: 100%;
+        }
+        #preview {
+            max-width: 320px;
+            max-height: 240px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+            display: none;
+        }
+        #map {
+            width: 100%;
+            max-width: 600px;
+            height: 320px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+        }
+        #result {
+            max-width: 600px;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+            color: #444;
+            overflow-x: auto;
+        }
+        #result p {
+            margin: 0.5rem 0;
+        }
+        #result h3 {
+            margin-top: 1.5rem;
+            color: #2563eb;
+        }
+        #result table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+        #result td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        #downloadJson {
+            display: none;
+            background-color: #10b981; /* green-500 */
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            max-width: 600px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        #downloadJson:hover {
+            background-color: #059669; /* green-700 */
+        }
+        /* Responsive */
+        @media (max-width: 650px) {
+            form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            button[type="submit"], input[type="file"] {
+                width: 100%;
+            }
+            #map, #result, #downloadJson, #preview {
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -268,16 +226,15 @@ button:focus {
                     }
 
                     if (exif) {
-                        html += '<h3>EXIF Metadata</h3><table style="width:100%; border-collapse: collapse;">';
+                        html += '<h3>EXIF Metadata</h3><table>';
                         for (const key in exif) {
                             html += `<tr>
-                                <td style="border:1px solid #ccc; padding: 4px;"><strong>${key}</strong></td>
-                                <td style="border:1px solid #ccc; padding: 4px;">${exif[key]}</td>
+                                <td><strong>${key}</strong></td>
+                                <td>${exif[key]}</td>
                             </tr>`;
                         }
                         html += '</table>';
 
-                        // Show download button and set its behavior
                         downloadBtn.style.display = 'inline-block';
                         downloadBtn.onclick = () => {
                             const blob = new Blob([JSON.stringify(exif, null, 2)], { type: 'application/json' });
