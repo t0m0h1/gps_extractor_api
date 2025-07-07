@@ -7,6 +7,25 @@ from PIL.ExifTags import TAGS
 from PIL.TiffImagePlugin import IFDRational
 import base64
 
+
+from functools import wraps
+from flask import abort
+
+# Simple hardcoded API keys (replace with DB/store later)
+VALID_API_KEYS = {"demo-key-123"}
+
+def require_api_key(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        api_key = request.headers.get('x-api-key')
+        if not api_key or api_key not in VALID_API_KEYS:
+            abort(401, description="Unauthorized: Invalid or missing API key")
+        return f(*args, **kwargs)
+    return decorated
+
+
+
+
 # Initialize the Flask application
 app = Flask(__name__)
 
@@ -64,6 +83,7 @@ def index():
 
 # Route to extract GPS data from uploaded image
 @app.route('/api/extract-gps', methods=['POST'])
+@require_api_key
 def extract_gps():
     if 'file' not in request.files:
         return jsonify({'error': 'No file uploaded'}), 400
