@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, abort
 from gps_utils import get_gps
 import os
 from werkzeug.utils import secure_filename
@@ -6,13 +6,10 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from PIL.TiffImagePlugin import IFDRational
 import base64
-
-
 from functools import wraps
-from flask import abort
 
-# Simple hardcoded API keys (replace with DB/store later)
-VALID_API_KEYS = {"demo-key-123"}
+# Load API keys from environment variable or fallback to default key
+VALID_API_KEYS = set(os.getenv("VALID_API_KEYS", "demo-key-123").split(","))
 
 def require_api_key(f):
     @wraps(f)
@@ -23,26 +20,17 @@ def require_api_key(f):
         return f(*args, **kwargs)
     return decorated
 
-
-
-
-# Initialize the Flask application
 app = Flask(__name__)
 
-# Configure the upload folder
+# Configure upload folder
 app.config['UPLOAD_FOLDER'] = 'uploads'
-
-# Create the upload folder if it doesn't exist
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-
-# Function to convert various data types
 def convert_value(value):
     if isinstance(value, IFDRational):
         return float(value)
     elif isinstance(value, bytes):
-        # Try decode, else base64 encode
         try:
             return value.decode('utf-8', errors='ignore')
         except Exception:
@@ -54,8 +42,6 @@ def convert_value(value):
     else:
         return value
 
-
-# Function to extract full EXIF data from an image
 def extract_full_exif(filepath):
     exif_data = {}
     try:
@@ -74,14 +60,10 @@ def extract_full_exif(filepath):
 
     return exif_data
 
-
-# Route for the index page
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
-# Route to extract GPS data from uploaded image
 @app.route('/api/extract-gps', methods=['POST'])
 @require_api_key
 def extract_gps():
@@ -89,6 +71,9 @@ def extract_gps():
         return jsonify({'error': 'No file uploaded'}), 400
 
     file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Empty filename'}), 400
+
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
@@ -106,7 +91,6 @@ def extract_gps():
         'exif': full_exif
     })
 
-
-# Run the application
 if __name__ == '__main__':
-    app.run(debug=True)
+    # For local testing only; Render uses gunicorn to run your app
+    app.run()
