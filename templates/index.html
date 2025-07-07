@@ -42,20 +42,43 @@
             mapDiv.innerHTML = '';
 
             if (res.ok) {
-                resultDiv.innerHTML = `
-                    <p><strong>Latitude:</strong> ${result.latitude}</p>
-                    <p><strong>Longitude:</strong> ${result.longitude}</p>
-                    <p><strong>Altitude:</strong> ${result.altitude}m</p>
-                    <p><a href="${result.map_link}" target="_blank">View on Google Maps</a></p>
-                `;
+                const gps = result.gps;
+                const exif = result.exif;
 
-                const map = L.map('map').setView([result.latitude, result.longitude], 16);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                }).addTo(map);
-                L.marker([result.latitude, result.longitude]).addTo(map)
-                    .bindPopup('Photo Location')
-                    .openPopup();
+                let html = '';
+
+                if (gps) {
+                    html += `
+                        <p><strong>Latitude:</strong> ${gps.latitude}</p>
+                        <p><strong>Longitude:</strong> ${gps.longitude}</p>
+                        <p><strong>Altitude:</strong> ${gps.altitude}m</p>
+                        <p><a href="${gps.map_link}" target="_blank">View on Google Maps</a></p>
+                    `;
+
+                    const map = L.map('map').setView([gps.latitude, gps.longitude], 16);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                    }).addTo(map);
+                    L.marker([gps.latitude, gps.longitude]).addTo(map)
+                        .bindPopup('Photo Location')
+                        .openPopup();
+                } else {
+                    html += '<p style="color:red;">No GPS data available.</p>';
+                }
+
+                if (exif) {
+                    html += '<h3>EXIF Metadata</h3><table style="width:100%; border-collapse: collapse;">';
+                    for (const key in exif) {
+                        html += `<tr>
+                            <td style="border:1px solid #ccc; padding: 4px;"><strong>${key}</strong></td>
+                            <td style="border:1px solid #ccc; padding: 4px;">${exif[key]}</td>
+                        </tr>`;
+                    }
+                    html += '</table>';
+                }
+
+                resultDiv.innerHTML = html;
+
             } else {
                 resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
             }
