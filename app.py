@@ -8,7 +8,6 @@ from PIL.TiffImagePlugin import IFDRational
 import base64
 from functools import wraps
 
-# Load API keys from environment variable or fallback to default key
 VALID_API_KEYS = set(os.getenv("VALID_API_KEYS", "demo-key-123").split(","))
 
 def require_api_key(f):
@@ -21,8 +20,6 @@ def require_api_key(f):
     return decorated
 
 app = Flask(__name__)
-
-# Configure upload folder
 app.config['UPLOAD_FOLDER'] = 'uploads'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -49,15 +46,12 @@ def extract_full_exif(filepath):
         info = img._getexif()
         if not info:
             return None
-
         for tag, value in info.items():
             decoded = TAGS.get(tag, tag)
             exif_data[decoded] = convert_value(value)
-
     except Exception as e:
         print(f"Error extracting EXIF: {e}")
         return None
-
     return exif_data
 
 @app.route('/')
@@ -92,5 +86,5 @@ def extract_gps():
     })
 
 if __name__ == '__main__':
-    # For local testing only; Render uses gunicorn to run your app
-    app.run()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
