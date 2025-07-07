@@ -3,10 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <title>Online GPS Extractor & Map Viewer</title>
-  <meta name="description" content="Easily extract GPS coordinates from drone or camera images and view them on a map. Free and fast online tool." />
+  <meta name="description" content="Easily extract GPS coordinates from drone or camera images and view them on a map." />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    /* Reset */
     *, *::before, *::after {
       box-sizing: border-box;
     }
@@ -27,118 +26,96 @@
     h1 {
       font-weight: 700;
       font-size: 1.75rem;
-      color: #1e3a8a; /* Indigo-800 */
-      margin-bottom: 2rem;
+      color: #1e3a8a;
+      margin-bottom: 1.5rem;
       text-align: center;
     }
 
     form {
       background: #fff;
-      box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       border-radius: 12px;
-      padding: 1rem 1.5rem;
+      padding: 1.25rem 1.5rem;
       max-width: 480px;
       width: 100%;
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
-      align-items: center;
       justify-content: center;
-      transition: box-shadow 0.3s ease;
-    }
-
-    form:hover {
-      box-shadow: 0 6px 20px rgb(0 0 0 / 0.12);
     }
 
     input[type="file"] {
       flex-grow: 1;
-      border: 1.5px solid #d1d5db; /* Gray-300 */
+      border: 1.5px solid #d1d5db;
       border-radius: 8px;
-      padding: 0.6rem 1rem;
+      padding: 0.5rem 1rem;
       font-size: 1rem;
       cursor: pointer;
-      transition: border-color 0.2s ease;
-    }
-
-    input[type="file"]:focus {
-      outline: none;
-      border-color: #3b82f6; /* Blue-500 */
-      box-shadow: 0 0 0 3px rgb(59 130 246 / 0.3);
     }
 
     button[type="submit"] {
-      background-color: #3b82f6; /* Blue-500 */
+      background-color: #3b82f6;
       border: none;
-      padding: 0.6rem 1.8rem;
+      padding: 0.55rem 1.6rem;
       border-radius: 8px;
       color: white;
       font-weight: 600;
       font-size: 1rem;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      flex-shrink: 0;
-      box-shadow: 0 4px 8px rgb(59 130 246 / 0.4);
     }
 
-    button[type="submit"]:hover,
-    button[type="submit"]:focus {
-      background-color: #2563eb; /* Blue-700 */
-      box-shadow: 0 6px 12px rgb(37 99 235 / 0.6);
-      outline: none;
+    button[type="submit"]:hover {
+      background-color: #2563eb;
     }
 
     #loading {
       width: 100%;
       text-align: center;
-      color: #6b7280; /* Gray-500 */
+      color: #6b7280;
       font-style: italic;
-      margin-top: 1rem;
-      user-select: none;
+      margin-top: 0.75rem;
       display: none;
     }
 
     #preview {
-      margin: 1.5rem 0;
+      margin: 1rem 0;
       max-width: 320px;
       max-height: 240px;
-      border-radius: 12px;
-      box-shadow: 0 6px 12px rgb(0 0 0 / 0.08);
+      border-radius: 10px;
       object-fit: contain;
       display: none;
       background: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
     }
 
     #map {
       width: 100%;
       max-width: 600px;
       height: 320px;
-      border-radius: 12px;
-      box-shadow: 0 6px 16px rgb(0 0 0 / 0.1);
-      margin-bottom: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin: 1rem 0;
     }
 
     #result {
       max-width: 600px;
       width: 100%;
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 6px 16px rgb(0 0 0 / 0.1);
-      padding: 1.5rem 2rem;
-      color: #374151; /* Gray-700 */
-      overflow-x: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 1.25rem 1.5rem;
+      color: #374151;
       font-size: 0.95rem;
       line-height: 1.4;
-      min-height: 60px;
-      margin-bottom: 1rem;
     }
 
     #result p {
-      margin: 0.75rem 0;
+      margin: 0.5rem 0;
     }
 
     #result h3 {
-      margin-top: 2rem;
+      margin: 1.5rem 0 0.5rem;
       color: #2563eb;
       font-weight: 600;
       font-size: 1.1rem;
@@ -149,16 +126,28 @@
     #result table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 0.75rem;
-      font-feature-settings: "tnum";
-      font-variant-numeric: tabular-nums;
+      margin-top: 0.5rem;
+      table-layout: fixed;
+      word-wrap: break-word;
     }
 
-    #result td {
-      border: 1px solid #e5e7eb; /* Gray-200 */
-      padding: 0.5rem 1rem;
+    #result th, #result td {
+      text-align: left;
+      border: 1px solid #e5e7eb;
+      padding: 0.5rem 0.75rem;
       vertical-align: top;
+      overflow-wrap: break-word;
+    }
+
+    #result th:first-child,
+    #result td:first-child {
+      width: 30%;
       word-break: break-word;
+    }
+
+    #result th {
+      background-color: #f1f5f9;
+      font-weight: 600;
     }
 
     #downloadJson {
@@ -166,26 +155,23 @@
       width: 100%;
       margin-top: 1rem;
       padding: 0.75rem 1.5rem;
-      background-color: #10b981; /* Green-500 */
+      background-color: #10b981;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       color: white;
       font-weight: 600;
       font-size: 1rem;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgb(16 185 129 / 0.5);
-      transition: background-color 0.3s ease;
       display: none;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.5);
+      transition: background-color 0.3s ease;
     }
 
-    #downloadJson:hover,
-    #downloadJson:focus {
-      background-color: #059669; /* Green-700 */
-      box-shadow: 0 6px 14px rgb(5 150 105 / 0.7);
-      outline: none;
+    #downloadJson:hover {
+      background-color: #059669;
+      box-shadow: 0 6px 14px rgba(5, 150, 105, 0.7);
     }
 
-    /* Responsive */
     @media (max-width: 650px) {
       form {
         flex-direction: column;
@@ -205,15 +191,15 @@
 <body>
   <h1>Upload a Photo to Extract GPS</h1>
   <form id="uploadForm" enctype="multipart/form-data" novalidate>
-    <input type="file" name="file" required aria-label="Upload photo" />
+    <input type="file" name="file" required />
     <button type="submit">Upload</button>
-    <div id="loading" role="status" aria-live="polite">⏳ Processing image...</div>
+    <div id="loading">⏳ Processing image...</div>
   </form>
 
   <img id="preview" alt="Image preview" />
 
   <div id="map"></div>
-  <div id="result" aria-live="polite"></div>
+  <div id="result"></div>
 
   <button id="downloadJson">Download EXIF JSON</button>
 
@@ -225,9 +211,8 @@
     const resultDiv = document.getElementById('result');
     const mapDiv = document.getElementById('map');
     const downloadBtn = document.getElementById('downloadJson');
-    let map;  // To keep reference to Leaflet map
+    let map;
 
-    // Show image preview on file select
     form.querySelector('input[type="file"]').addEventListener('change', function () {
       const file = this.files[0];
       if (file) {
@@ -271,9 +256,7 @@
               <p><a href="${gps.map_link}" target="_blank" rel="noopener noreferrer">View on Google Maps</a></p>
             `;
 
-            if (map) {
-              map.remove();
-            }
+            if (map) map.remove();
             map = L.map('map').setView([gps.latitude, gps.longitude], 16);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
               maxZoom: 19,
@@ -283,21 +266,16 @@
               .openPopup();
           } else {
             html += '<p style="color:red;">No GPS data available.</p>';
-            if (map) {
-              map.remove();
-              map = null;
-            }
+            if (map) map.remove();
+            map = null;
           }
 
           if (exif) {
-            html += '<h3>EXIF Metadata</h3><table>';
+            html += '<h3>EXIF Metadata</h3><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>';
             for (const key in exif) {
-              html += `<tr>
-                <td><strong>${key}</strong></td>
-                <td>${exif[key]}</td>
-              </tr>`;
+              html += `<tr><td>${key}</td><td>${exif[key]}</td></tr>`;
             }
-            html += '</table>';
+            html += '</tbody></table>';
 
             downloadBtn.style.display = 'inline-block';
             downloadBtn.onclick = () => {
@@ -309,28 +287,19 @@
               a.click();
               URL.revokeObjectURL(url);
             };
-          } else {
-            downloadBtn.style.display = 'none';
           }
 
           resultDiv.innerHTML = html;
-
         } else {
           resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-          downloadBtn.style.display = 'none';
-          if (map) {
-            map.remove();
-            map = null;
-          }
+          if (map) map.remove();
+          map = null;
         }
 
       } catch (error) {
         resultDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-        downloadBtn.style.display = 'none';
-        if (map) {
-          map.remove();
-          map = null;
-        }
+        if (map) map.remove();
+        map = null;
       } finally {
         loadingDiv.style.display = 'none';
       }
