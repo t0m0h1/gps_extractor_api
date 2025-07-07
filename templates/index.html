@@ -186,6 +186,55 @@
         max-width: 100%;
       }
     }
+
+    /* Styles for links at the top */
+    .container {
+  background: none;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  width: 50%;
+  max-width: 400px;
+  /* Add flexbox to align links horizontally */
+  display: flex;
+  justify-content: center; /* center horizontally */
+  gap: 20px; /* space between links */
+  margin-top: 1.5rem;
+  margin-bottom: 20px;
+}
+
+/* Style for both links */
+.container a {
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.6rem 1.3rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border: 2px solid transparent;
+  color: #4f46e5; /* Indigo */
+  background-color: transparent;
+}
+
+/* Hover effect */
+.container a:hover {
+  background-color: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+
+/* Special style for Sign Up link */
+.container a[href$='signup'] {
+  background-color: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+
+.container a[href$='signup']:hover {
+  background-color: #4338ca;
+  border-color: #4338ca;
+}
+
   </style>
 </head>
 <body>
@@ -206,10 +255,12 @@
 
   <img id="preview" alt="Image preview" />
 
+  <button id="downloadJson">Download EXIF JSON</button>
+
   <div id="map"></div>
   <div id="result"></div>
 
-  <button id="downloadJson">Download EXIF JSON</button>
+  
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
