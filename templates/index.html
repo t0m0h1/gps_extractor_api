@@ -1,276 +1,340 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Online GPS Extractor & Map Viewer</title>
-    <meta charset="utf-8" />
-    <meta name="description" content="Easily extract GPS coordinates from drone or camera images and view them on a map. Free and fast online tool." />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        /* Reset some default */
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f9fafb;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        h1 {
-            margin-bottom: 1rem;
-            color: #3d72b7; /* a nice blue */
-            text-align: center;
-        }
-        form {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-            max-width: 500px;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        input[type="file"] {
-            flex-grow: 1;
-            cursor: pointer;
-        }
-        button[type="submit"] {
-            background-color: #3e5c9d; /* blue-600 */
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            flex-shrink: 0;
-        }
-        button[type="submit"]:hover {
-            background-color: #1e40af; /* blue-800 */
-        }
-        #loading {
-            display: none;
-            margin-top: 10px;
-            font-style: italic;
-            color: #555;
-            text-align: center;
-            width: 100%;
-        }
-        #preview {
-            max-width: 320px;
-            max-height: 240px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
-            display: none;
-        }
-        #map {
-            width: 100%;
-            max-width: 600px;
-            height: 320px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-        }
-        #result {
-            max-width: 600px;
-            background: white;
-            padding: 20px 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-            color: #444;
-            overflow-x: auto;
-        }
-        #result p {
-            margin: 0.5rem 0;
-        }
-        #result h3 {
-            margin-top: 1.5rem;
-            color: #2563eb;
-        }
-        #result table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 0.5rem;
-        }
-        #result td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        #downloadJson {
-            display: none;
-            background-color: #10b981; /* green-500 */
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            max-width: 600px;
-            width: 100%;
-            margin-top: 10px;
-        }
-        #downloadJson:hover {
-            background-color: #059669; /* green-700 */
-        }
-        /* Responsive */
-        @media (max-width: 650px) {
-            form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            button[type="submit"], input[type="file"] {
-                width: 100%;
-            }
-            #map, #result, #downloadJson, #preview {
-                max-width: 100%;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>Online GPS Extractor & Map Viewer</title>
+  <meta name="description" content="Easily extract GPS coordinates from drone or camera images and view them on a map. Free and fast online tool." />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      line-height: 1.5;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 1.75rem;
+      color: #1e3a8a; /* Indigo-800 */
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    form {
+      background: #fff;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      transition: box-shadow 0.3s ease;
+    }
+
+    form:hover {
+      box-shadow: 0 6px 20px rgb(0 0 0 / 0.12);
+    }
+
+    input[type="file"] {
+      flex-grow: 1;
+      border: 1.5px solid #d1d5db; /* Gray-300 */
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    input[type="file"]:focus {
+      outline: none;
+      border-color: #3b82f6; /* Blue-500 */
+      box-shadow: 0 0 0 3px rgb(59 130 246 / 0.3);
+    }
+
+    button[type="submit"] {
+      background-color: #3b82f6; /* Blue-500 */
+      border: none;
+      padding: 0.6rem 1.8rem;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      flex-shrink: 0;
+      box-shadow: 0 4px 8px rgb(59 130 246 / 0.4);
+    }
+
+    button[type="submit"]:hover,
+    button[type="submit"]:focus {
+      background-color: #2563eb; /* Blue-700 */
+      box-shadow: 0 6px 12px rgb(37 99 235 / 0.6);
+      outline: none;
+    }
+
+    #loading {
+      width: 100%;
+      text-align: center;
+      color: #6b7280; /* Gray-500 */
+      font-style: italic;
+      margin-top: 1rem;
+      user-select: none;
+      display: none;
+    }
+
+    #preview {
+      margin: 1.5rem 0;
+      max-width: 320px;
+      max-height: 240px;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgb(0 0 0 / 0.08);
+      object-fit: contain;
+      display: none;
+      background: white;
+    }
+
+    #map {
+      width: 100%;
+      max-width: 600px;
+      height: 320px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgb(0 0 0 / 0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    #result {
+      max-width: 600px;
+      width: 100%;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgb(0 0 0 / 0.1);
+      padding: 1.5rem 2rem;
+      color: #374151; /* Gray-700 */
+      overflow-x: auto;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      min-height: 60px;
+      margin-bottom: 1rem;
+    }
+
+    #result p {
+      margin: 0.75rem 0;
+    }
+
+    #result h3 {
+      margin-top: 2rem;
+      color: #2563eb;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 0.25rem;
+    }
+
+    #result table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+
+    #result td {
+      border: 1px solid #e5e7eb; /* Gray-200 */
+      padding: 0.5rem 1rem;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    #downloadJson {
+      max-width: 600px;
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      background-color: #10b981; /* Green-500 */
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgb(16 185 129 / 0.5);
+      transition: background-color 0.3s ease;
+      display: none;
+    }
+
+    #downloadJson:hover,
+    #downloadJson:focus {
+      background-color: #059669; /* Green-700 */
+      box-shadow: 0 6px 14px rgb(5 150 105 / 0.7);
+      outline: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 650px) {
+      form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      input[type="file"],
+      button[type="submit"],
+      #downloadJson {
+        width: 100%;
+      }
+      #map, #result, #preview {
+        max-width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>Upload a Photo to Extract GPS</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" name="file" required />
-        <button type="submit">Upload</button>
-        <div id="loading">⏳ Processing image...</div>
-    </form>
+  <h1>Upload a Photo to Extract GPS</h1>
+  <form id="uploadForm" enctype="multipart/form-data" novalidate>
+    <input type="file" name="file" required aria-label="Upload photo" />
+    <button type="submit">Upload</button>
+    <div id="loading" role="status" aria-live="polite">⏳ Processing image...</div>
+  </form>
 
-    <img id="preview" alt="Image preview" />
+  <img id="preview" alt="Image preview" />
 
-    <div id="map"></div>
-    <div id="result"></div>
+  <div id="map"></div>
+  <div id="result" aria-live="polite"></div>
 
-    <button id="downloadJson">Download EXIF JSON</button>
+  <button id="downloadJson">Download EXIF JSON</button>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const form = document.getElementById('uploadForm');
-        const loadingDiv = document.getElementById('loading');
-        const preview = document.getElementById('preview');
-        const resultDiv = document.getElementById('result');
-        const mapDiv = document.getElementById('map');
-        const downloadBtn = document.getElementById('downloadJson');
-        let map;  // To keep reference to Leaflet map
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const form = document.getElementById('uploadForm');
+    const loadingDiv = document.getElementById('loading');
+    const preview = document.getElementById('preview');
+    const resultDiv = document.getElementById('result');
+    const mapDiv = document.getElementById('map');
+    const downloadBtn = document.getElementById('downloadJson');
+    let map;  // To keep reference to Leaflet map
 
-        // Show image preview on file select
-        form.querySelector('input[type="file"]').addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-                preview.style.display = 'block';
-            } else {
-                preview.style.display = 'none';
-                preview.src = '';
-            }
+    // Show image preview on file select
+    form.querySelector('input[type="file"]').addEventListener('change', function () {
+      const file = this.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+        preview.src = '';
+      }
+    });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      loadingDiv.style.display = 'block';
+      resultDiv.innerHTML = '';
+      mapDiv.innerHTML = '';
+      downloadBtn.style.display = 'none';
+
+      const formData = new FormData(this);
+
+      try {
+        const res = await fetch('/api/extract-gps', {
+          method: 'POST',
+          headers: { 'x-api-key': 'demo-key-123' },
+          body: formData
         });
 
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            loadingDiv.style.display = 'block';
-            resultDiv.innerHTML = '';
-            mapDiv.innerHTML = '';
+        const result = await res.json();
+
+        if (res.ok) {
+          const gps = result.gps;
+          const exif = result.exif;
+
+          let html = '';
+
+          if (gps) {
+            html += `
+              <p><strong>Latitude:</strong> ${gps.latitude}</p>
+              <p><strong>Longitude:</strong> ${gps.longitude}</p>
+              <p><strong>Altitude:</strong> ${gps.altitude}m</p>
+              <p><a href="${gps.map_link}" target="_blank" rel="noopener noreferrer">View on Google Maps</a></p>
+            `;
+
+            if (map) {
+              map.remove();
+            }
+            map = L.map('map').setView([gps.latitude, gps.longitude], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 19,
+            }).addTo(map);
+            L.marker([gps.latitude, gps.longitude]).addTo(map)
+              .bindPopup('Photo Location')
+              .openPopup();
+          } else {
+            html += '<p style="color:red;">No GPS data available.</p>';
+            if (map) {
+              map.remove();
+              map = null;
+            }
+          }
+
+          if (exif) {
+            html += '<h3>EXIF Metadata</h3><table>';
+            for (const key in exif) {
+              html += `<tr>
+                <td><strong>${key}</strong></td>
+                <td>${exif[key]}</td>
+              </tr>`;
+            }
+            html += '</table>';
+
+            downloadBtn.style.display = 'inline-block';
+            downloadBtn.onclick = () => {
+              const blob = new Blob([JSON.stringify(exif, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'exif_data.json';
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          } else {
             downloadBtn.style.display = 'none';
+          }
 
-            const formData = new FormData(this);
+          resultDiv.innerHTML = html;
 
-            try {
-                const res = await fetch('/api/extract-gps', {
-                    method: 'POST',
-                    headers: { 'x-api-key': 'demo-key-123' },
-                    body: formData
-                });
+        } else {
+          resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+          downloadBtn.style.display = 'none';
+          if (map) {
+            map.remove();
+            map = null;
+          }
+        }
 
-                const result = await res.json();
-
-                if (res.ok) {
-                    const gps = result.gps;
-                    const exif = result.exif;
-
-                    let html = '';
-
-                    if (gps) {
-                        html += `
-                            <p><strong>Latitude:</strong> ${gps.latitude}</p>
-                            <p><strong>Longitude:</strong> ${gps.longitude}</p>
-                            <p><strong>Altitude:</strong> ${gps.altitude}m</p>
-                            <p><a href="${gps.map_link}" target="_blank" rel="noopener noreferrer">View on Google Maps</a></p>
-                        `;
-
-                        if (map) {
-                            map.remove();
-                        }
-                        map = L.map('map').setView([gps.latitude, gps.longitude], 16);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            maxZoom: 19,
-                        }).addTo(map);
-                        L.marker([gps.latitude, gps.longitude]).addTo(map)
-                            .bindPopup('Photo Location')
-                            .openPopup();
-                    } else {
-                        html += '<p style="color:red;">No GPS data available.</p>';
-                        if (map) {
-                            map.remove();
-                            map = null;
-                        }
-                    }
-
-                    if (exif) {
-                        html += '<h3>EXIF Metadata</h3><table>';
-                        for (const key in exif) {
-                            html += `<tr>
-                                <td><strong>${key}</strong></td>
-                                <td>${exif[key]}</td>
-                            </tr>`;
-                        }
-                        html += '</table>';
-
-                        downloadBtn.style.display = 'inline-block';
-                        downloadBtn.onclick = () => {
-                            const blob = new Blob([JSON.stringify(exif, null, 2)], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = 'exif_data.json';
-                            a.click();
-                            URL.revokeObjectURL(url);
-                        };
-                    } else {
-                        downloadBtn.style.display = 'none';
-                    }
-
-                    resultDiv.innerHTML = html;
-
-                } else {
-                    resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-                    downloadBtn.style.display = 'none';
-                    if (map) {
-                        map.remove();
-                        map = null;
-                    }
-                }
-
-            } catch (error) {
-                resultDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-                downloadBtn.style.display = 'none';
-                if (map) {
-                    map.remove();
-                    map = null;
-                }
-            } finally {
-                loadingDiv.style.display = 'none';
-            }
-        });
-    </script>
+      } catch (error) {
+        resultDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+        downloadBtn.style.display = 'none';
+        if (map) {
+          map.remove();
+          map = null;
+        }
+      } finally {
+        loadingDiv.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
