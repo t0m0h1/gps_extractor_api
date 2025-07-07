@@ -7,17 +7,177 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
-        h1 { color: #333; }
-        #map { height: 400px; margin-top: 20px; border: 2px solid #ccc; border-radius: 5px; }
-        form { background: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        button { background-color: #2b6b9d; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #218838; }
-        #result { margin-top: 20px; }
-        #preview { max-width: 100%; margin-top: 10px; display: none; border-radius: 5px; border: 1px solid #ccc; }
-        #loading { color: #2b6b9d; margin-top: 10px; font-weight: bold; display: none; }
-        #downloadJson { display: none; margin-top: 10px; padding: 8px 12px; border-radius: 5px; border:none; background-color:#2b6b9d; color:white; cursor:pointer; }
-        #downloadJson:hover { background-color: #218838; }
+        body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px auto;
+    max-width: 700px;
+    background-color: #f9fafb;
+    color: #222;
+    line-height: 1.6;
+    padding: 0 15px;
+}
+
+h1 {
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+form {
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+}
+
+form input[type="file"] {
+    flex-grow: 1;
+    padding: 8px 12px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+form input[type="file"]:focus {
+    outline: none;
+    border-color: #2b6b9d;
+}
+
+button {
+    background-color: #2b6b9d;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.15s ease;
+    box-shadow: 0 3px 8px rgba(43,107,157,0.4);
+    flex-shrink: 0;
+}
+
+button:hover,
+button:focus {
+    background-color: #1d4f75;
+    outline: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(29,79,117,0.5);
+}
+
+#map {
+    height: 420px;
+    margin-top: 30px;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+#preview {
+    max-width: 100%;
+    max-height: 300px;
+    margin-top: 20px;
+    border-radius: 12px;
+    border: 1.5px solid #ccc;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    display: none;
+    object-fit: contain;
+}
+
+#loading {
+    color: #2b6b9d;
+    margin-top: 15px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: none;
+    text-align: center;
+}
+
+#result {
+    margin-top: 30px;
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    word-wrap: break-word;
+}
+
+#result p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+#result a {
+    color: #2b6b9d;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+#result a:hover {
+    text-decoration: underline;
+}
+
+#result h3 {
+    margin-top: 20px;
+    margin-bottom: 12px;
+    color: #2c3e50;
+}
+
+#result table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+#result table td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+}
+
+#downloadJson {
+    display: none;
+    margin-top: 25px;
+    padding: 12px 30px;
+    border-radius: 8px;
+    border: none;
+    background-color: #2b6b9d;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(43,107,157,0.5);
+    transition: background-color 0.3s ease, transform 0.15s ease;
+}
+
+#downloadJson:hover,
+#downloadJson:focus {
+    background-color: #1d4f75;
+    outline: none;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 15px rgba(29,79,117,0.6);
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+    form {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    button, input[type="file"] {
+        width: 100%;
+        flex-grow: unset;
+    }
+}
+
     </style>
 </head>
 <body>
