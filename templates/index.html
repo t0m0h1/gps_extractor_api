@@ -23,66 +23,72 @@
         <button type="submit">Upload</button>
     </form>
 
-    <div id="result"></div>
+    <!-- This is where the map and data will show up -->
     <div id="map"></div>
+    <div id="result"></div>
+   
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.getElementById('uploadForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const res = await fetch('/api/extract-gps', {
-                method: 'POST',
-                body: formData
-            });
+        e.preventDefault();
+        const formData = new FormData(this);
 
-            const result = await res.json();
-            const resultDiv = document.getElementById('result');
-            const mapDiv = document.getElementById('map');
-            mapDiv.innerHTML = '';
-
-            if (res.ok) {
-                const gps = result.gps;
-                const exif = result.exif;
-
-                let html = '';
-
-                if (gps) {
-                    html += `
-                        <p><strong>Latitude:</strong> ${gps.latitude}</p>
-                        <p><strong>Longitude:</strong> ${gps.longitude}</p>
-                        <p><strong>Altitude:</strong> ${gps.altitude}m</p>
-                        <p><a href="${gps.map_link}" target="_blank">View on Google Maps</a></p>
-                    `;
-
-                    const map = L.map('map').setView([gps.latitude, gps.longitude], 16);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                    }).addTo(map);
-                    L.marker([gps.latitude, gps.longitude]).addTo(map)
-                        .bindPopup('Photo Location')
-                        .openPopup();
-                } else {
-                    html += '<p style="color:red;">No GPS data available.</p>';
-                }
-
-                if (exif) {
-                    html += '<h3>EXIF Metadata</h3><table style="width:100%; border-collapse: collapse;">';
-                    for (const key in exif) {
-                        html += `<tr>
-                            <td style="border:1px solid #ccc; padding: 4px;"><strong>${key}</strong></td>
-                            <td style="border:1px solid #ccc; padding: 4px;">${exif[key]}</td>
-                        </tr>`;
-                    }
-                    html += '</table>';
-                }
-
-                resultDiv.innerHTML = html;
-
-            } else {
-                resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-            }
+        const res = await fetch('/api/extract-gps', {
+            method: 'POST',
+            headers: {
+                'x-api-key': 'demo-key-123'  // 👈 Set your API key here
+            },
+            body: formData
         });
+
+        const result = await res.json();
+        const resultDiv = document.getElementById('result');
+        const mapDiv = document.getElementById('map');
+        mapDiv.innerHTML = '';
+
+        if (res.ok) {
+            const gps = result.gps;
+            const exif = result.exif;
+
+            let html = '';
+
+            if (gps) {
+                html += `
+                    <p><strong>Latitude:</strong> ${gps.latitude}</p>
+                    <p><strong>Longitude:</strong> ${gps.longitude}</p>
+                    <p><strong>Altitude:</strong> ${gps.altitude}m</p>
+                    <p><a href="${gps.map_link}" target="_blank">View on Google Maps</a></p>
+                `;
+
+                const map = L.map('map').setView([gps.latitude, gps.longitude], 16);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                }).addTo(map);
+                L.marker([gps.latitude, gps.longitude]).addTo(map)
+                    .bindPopup('Photo Location')
+                    .openPopup();
+            } else {
+                html += '<p style="color:red;">No GPS data available.</p>';
+            }
+
+            if (exif) {
+                html += '<h3>EXIF Metadata</h3><table style="width:100%; border-collapse: collapse;">';
+                for (const key in exif) {
+                    html += `<tr>
+                        <td style="border:1px solid #ccc; padding: 4px;"><strong>${key}</strong></td>
+                        <td style="border:1px solid #ccc; padding: 4px;">${exif[key]}</td>
+                    </tr>`;
+                }
+                html += '</table>';
+            }
+
+            resultDiv.innerHTML = html;
+
+        } else {
+            resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+        }
+    });
     </script>
 </body>
 </html>
