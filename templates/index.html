@@ -14,6 +14,10 @@
         button { background-color: #2b6b9d; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
         button:hover { background-color: #218838; }
         #result { margin-top: 20px; }
+        #preview { max-width: 100%; margin-top: 10px; display: none; border-radius: 5px; border: 1px solid #ccc; }
+        #loading { color: #2b6b9d; margin-top: 10px; font-weight: bold; display: none; }
+        #downloadJson { display: none; margin-top: 10px; padding: 8px 12px; border-radius: 5px; border:none; background-color:#2b6b9d; color:white; cursor:pointer; }
+        #downloadJson:hover { background-color: #218838; }
     </style>
 </head>
 <body>
@@ -21,74 +25,135 @@
     <form id="uploadForm" enctype="multipart/form-data">
         <input type="file" name="file" required />
         <button type="submit">Upload</button>
+        <div id="loading">⏳ Processing image...</div>
     </form>
 
-    <!-- This is where the map and data will show up -->
+    <img id="preview" alt="Image preview" />
+
     <div id="map"></div>
     <div id="result"></div>
-   
+
+    <button id="downloadJson">Download EXIF JSON</button>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-
-        const res = await fetch('/api/extract-gps', {
-            method: 'POST',
-            headers: {
-                'x-api-key': 'demo-key-123'  // 👈 Set your API key here
-            },
-            body: formData
-        });
-
-        const result = await res.json();
+        const form = document.getElementById('uploadForm');
+        const loadingDiv = document.getElementById('loading');
+        const preview = document.getElementById('preview');
         const resultDiv = document.getElementById('result');
         const mapDiv = document.getElementById('map');
-        mapDiv.innerHTML = '';
+        const downloadBtn = document.getElementById('downloadJson');
+        let map;  // To keep reference to Leaflet map
 
-        if (res.ok) {
-            const gps = result.gps;
-            const exif = result.exif;
-
-            let html = '';
-
-            if (gps) {
-                html += `
-                    <p><strong>Latitude:</strong> ${gps.latitude}</p>
-                    <p><strong>Longitude:</strong> ${gps.longitude}</p>
-                    <p><strong>Altitude:</strong> ${gps.altitude}m</p>
-                    <p><a href="${gps.map_link}" target="_blank">View on Google Maps</a></p>
-                `;
-
-                const map = L.map('map').setView([gps.latitude, gps.longitude], 16);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                }).addTo(map);
-                L.marker([gps.latitude, gps.longitude]).addTo(map)
-                    .bindPopup('Photo Location')
-                    .openPopup();
+        // Show image preview on file select
+        form.querySelector('input[type="file"]').addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
             } else {
-                html += '<p style="color:red;">No GPS data available.</p>';
+                preview.style.display = 'none';
+                preview.src = '';
             }
+        });
 
-            if (exif) {
-                html += '<h3>EXIF Metadata</h3><table style="width:100%; border-collapse: collapse;">';
-                for (const key in exif) {
-                    html += `<tr>
-                        <td style="border:1px solid #ccc; padding: 4px;"><strong>${key}</strong></td>
-                        <td style="border:1px solid #ccc; padding: 4px;">${exif[key]}</td>
-                    </tr>`;
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+            mapDiv.innerHTML = '';
+            downloadBtn.style.display = 'none';
+
+            const formData = new FormData(this);
+
+            try {
+                const res = await fetch('/api/extract-gps', {
+                    method: 'POST',
+                    headers: { 'x-api-key': 'demo-key-123' },
+                    body: formData
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    const gps = result.gps;
+                    const exif = result.exif;
+
+                    let html = '';
+
+                    if (gps) {
+                        html += `
+                            <p><strong>Latitude:</strong> ${gps.latitude}</p>
+                            <p><strong>Longitude:</strong> ${gps.longitude}</p>
+                            <p><strong>Altitude:</strong> ${gps.altitude}m</p>
+                            <p><a href="${gps.map_link}" target="_blank" rel="noopener noreferrer">View on Google Maps</a></p>
+                        `;
+
+                        if (map) {
+                            map.remove();
+                        }
+                        map = L.map('map').setView([gps.latitude, gps.longitude], 16);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19,
+                        }).addTo(map);
+                        L.marker([gps.latitude, gps.longitude]).addTo(map)
+                            .bindPopup('Photo Location')
+                            .openPopup();
+                    } else {
+                        html += '<p style="color:red;">No GPS data available.</p>';
+                        if (map) {
+                            map.remove();
+                            map = null;
+                        }
+                    }
+
+                    if (exif) {
+                        html += '<h3>EXIF Metadata</h3><table style="width:100%; border-collapse: collapse;">';
+                        for (const key in exif) {
+                            html += `<tr>
+                                <td style="border:1px solid #ccc; padding: 4px;"><strong>${key}</strong></td>
+                                <td style="border:1px solid #ccc; padding: 4px;">${exif[key]}</td>
+                            </tr>`;
+                        }
+                        html += '</table>';
+
+                        // Show download button and set its behavior
+                        downloadBtn.style.display = 'inline-block';
+                        downloadBtn.onclick = () => {
+                            const blob = new Blob([JSON.stringify(exif, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'exif_data.json';
+                            a.click();
+                            URL.revokeObjectURL(url);
+                        };
+                    } else {
+                        downloadBtn.style.display = 'none';
+                    }
+
+                    resultDiv.innerHTML = html;
+
+                } else {
+                    resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+                    downloadBtn.style.display = 'none';
+                    if (map) {
+                        map.remove();
+                        map = null;
+                    }
                 }
-                html += '</table>';
+
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                downloadBtn.style.display = 'none';
+                if (map) {
+                    map.remove();
+                    map = null;
+                }
+            } finally {
+                loadingDiv.style.display = 'none';
             }
-
-            resultDiv.innerHTML = html;
-
-        } else {
-            resultDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-        }
-    });
+        });
     </script>
 </body>
 </html>
