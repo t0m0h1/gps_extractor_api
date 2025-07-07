@@ -7,12 +7,18 @@ from PIL.ExifTags import TAGS
 from PIL.TiffImagePlugin import IFDRational
 import base64
 
+# Initialize the Flask application
 app = Flask(__name__)
+
+# Configure the upload folder
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
+# Create the upload folder if it doesn't exist
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
+
+# Function to convert various data types
 def convert_value(value):
     if isinstance(value, IFDRational):
         return float(value)
@@ -29,6 +35,8 @@ def convert_value(value):
     else:
         return value
 
+
+# Function to extract full EXIF data from an image
 def extract_full_exif(filepath):
     exif_data = {}
     try:
@@ -47,10 +55,14 @@ def extract_full_exif(filepath):
 
     return exif_data
 
+
+# Route for the index page
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
+# Route to extract GPS data from uploaded image
 @app.route('/api/extract-gps', methods=['POST'])
 def extract_gps():
     if 'file' not in request.files:
@@ -74,5 +86,7 @@ def extract_gps():
         'exif': full_exif
     })
 
+
+# Run the application
 if __name__ == '__main__':
     app.run(debug=True)
