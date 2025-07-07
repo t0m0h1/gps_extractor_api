@@ -190,6 +190,14 @@
 </head>
 <body>
   <h1>Upload a Photo to Extract GPS</h1>
+
+  <div class="container">
+    <a href="{{ url_for('login') }}">Log In</a>
+    <a href="{{ url_for('signup') }}">Sign Up</a>
+  </div>
+
+
+
   <form id="uploadForm" enctype="multipart/form-data" novalidate>
     <input type="file" name="file" required />
     <button type="submit">Upload</button>
